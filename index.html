@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant Hub</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Authentication Styles */
+        .auth-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .auth-header p {
+            color: #64748b;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .auth-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
+        }
+
+        .auth-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .auth-button.signup {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .auth-switch {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        /* App Container */
+        .app-container {
+            display: none;
+            height: 100vh;
+            flex-direction: row;
+        }
+
+        .app-container.active {
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 24px;
+            color: #60a5fa;
+        }
+
+        .logo h2 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .new-chat-btn {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 20px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .new-chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(96, 165, 250, 0.3);
+        }
+
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .chat-item {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-item.active {
+            background: rgba(96, 165, 250, 0.2);
+        }
+
+        .chat-info h4 {
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #e2e8f0;
+        }
+
+        .chat-info p {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .chat-actions {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .chat-item:hover .chat-actions {
+            opacity: 1;
+        }
+
+        .delete-chat {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .delete-chat:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fff;
+        }
+
+        .user-profile {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Main Chat Area */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            height: 100vh;
+        }
+
+        .chat-header {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .chat-title h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .chat-title p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .chat-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 20px;
+            color: #166534;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            background: #f8fafc;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .n8n-chat-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .chat-instance {
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .chat-instance.active {
+            display: block;
+        }
+
+        /* N8N Chat Overrides */
+        .chat-instance iframe,
+        .chat-instance > div {
+            width: 100% !important;
+            height: 100% !important;
+            border: none !important;
+            border-radius: 0 !important;
+        }
+
+        .welcome-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #64748b;
+        }
+
+        .welcome-message i {
+            font-size: 64px;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+        }
+
+        .welcome-message h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1e293b;
+        }
+
+        .welcome-message p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .chat-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #64748b;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .app-container.active {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 200px;
+                order: 2;
+                padding: 10px;
+            }
+
+            .chat-list {
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+
+            .chat-item {
+                min-width: 150px;
+                flex-shrink: 0;
+            }
+            
+            .chat-container {
+                order: 1;
+                height: calc(100vh - 200px);
+            }
+
+            .chat-header {
+                padding: 15px 20px;
+            }
+
+            .chat-title h2 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Authentication Container -->
+    <div id="authContainer" class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>AI Assistant Hub</h1>
+                <p>Your intelligent conversation partner</p>
+            </div>
+            
+            <button id="loginBtn" class="auth-button">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+            
+            <button id="signupBtn" class="auth-button signup">
+                <i class="fas fa-user-plus"></i> Create Account
+            </button>
+            
+            <div class="auth-switch">
+                <p>Secure authentication powered by Netlify Identity</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="appContainer" class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                    <h2>AI Hub</h2>
+                </div>
+            </div>
+
+            <button id="newChatBtn" class="new-chat-btn">
+                <i class="fas fa-plus"></i>
+                New Chat
+            </button>
+
+            <div class="chat-list" id="chatList">
+                <!-- Chat items will be populated here -->
+            </div>
+
+            <div class="user-profile">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div>
+                        <div style="font-size: 14px; font-weight: 600;" id="userName">User</div>
+                        <div style="font-size: 12px; color: #94a3b8;">Online</div>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <h2 id="chatTitle">AI Assistant</h2>
+                    <p id="chatSubtitle">Ready to help with your questions</p>
+                </div>
+                <div class="chat-status">
+                    <div class="status-dot"></div>
+                    Online
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="n8n-chat-container" id="n8nChatContainer">
+                    <!-- Chat instances will be created here -->
+                </div>
+                <div class="welcome-message" id="welcomeMessage">
+                    <i class="fas fa-comments"></i>
+                    <h3>Welcome to AI Assistant Hub</h3>
+                    <p>Start a conversation by creating a new chat!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Netlify Identity -->
+    <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    
+    <script>
+        // Simple global variables
+        let currentUser = null;
+        let chats = [];
+        let currentChatId = null;
+        let chatInstances = {};
+
+        // Wait for everything to load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, initializing...');
+            setTimeout(init, 1000);
+        });
+
+        function init() {
+            console.log('Initializing app...');
+            
+            if (typeof netlifyIdentity === 'undefined') {
+                console.log('Netlify Identity not ready, retrying...');
+                setTimeout(init, 1000);
+                return;
+            }
+
+            netlifyIdentity.init();
+            
+            // Set up authentication events
+            netlifyIdentity.on('login', user => {
+                console.log('Login successful:', user.email);
+                currentUser = {
+                    id: user.id,
+                    email: user.email,
+                    name: user.user_metadata?.full_name || user.email.split('@')[0]
+                };
+                netlifyIdentity.close();
+                setTimeout(showApp, 500);
+            });
+
+            netlifyIdentity.on('signup', user => {
+                console.log('Signup successful');
+                netlifyIdentity.close();
+                alert('Please check your email to confirm your account, then sign in.');
+            });
+
+            netlifyIdentity.on('logout', () => {
+                console.log('Logged out');
+                currentUser = null;
+                chats = [];
+                currentChatId = null;
+                chatInstances = {};
+                showAuth();
+            });
+
+            // Set up button events
+            document.getElementById('loginBtn').addEventListener('click', () => {
+                console.log('Login clicked');
+                netlifyIdentity.open('login');
+            });
+
+            document.getElementById('signupBtn').addEventListener('click', () => {
+                console.log('Signup clicked');
+                netlifyIdentity.open('signup');
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                if (confirm('Logout?')) {
+                    netlifyIdentity.logout();
+                }
+            });
+
+            document.getElementById('newChatBtn').addEventListener('click', () => {
+                createNewChat();
+            });
+
+            // Check if already logged in
+            const user = netlifyIdentity.currentUser();
+            if (user && user.email_confirmed_at) {
+                console.log('Already logged in:', user.email);
+                currentUser = {
+                    id: user.id,
+                    email: user.email,
+                    name: user.user_metadata?.full_name || user.email.split('@')[0]
+                };
+                showApp();
+            } else {
+                showAuth();
+            }
+        }
+
+        function showAuth() {
+            console.log('Showing auth screen');
+            document.getElementById('authContainer').style.display = 'flex';
+            document.getElementById('appContainer').classList.remove('active');
+        }
+
+        function showApp() {
+            console.log('Showing app');
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('appContainer').classList.add('active');
+            
+            // Update user info
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userAvatar').textContent = currentUser.name[0].toUpperCase();
+            
+            loadChats();
+            
+            if (chats.length === 0) {
+                createNewChat();
+            }
+        }
+
+        function loadChats() {
+            const saved = localStorage.getItem('chats_' + currentUser.id);
+            if (saved) {
+                chats = JSON.parse(saved);
+                renderChats();
+                if (chats.length > 0) {
+                    selectChat(chats[0].id);
+                }
+            }
+        }
+
+        function saveChats() {
+            localStorage.setItem('chats_' + currentUser.id, JSON.stringify(chats));
+        }
+
+        function createNewChat() {
+            const id = 'chat_' + Date.now();
+            const chat = {
+                id: id,
+                title: 'New Chat',
+                created: new Date(),
+                messages: false
+            };
+            
+            chats.unshift(chat);
+            saveChats();
+            renderChats();
+            selectChat(id);
+        }
+
+        function deleteChat(id, event) {
+            event.stopPropagation();
+            if (confirm('Delete this chat?')) {
+                chats = chats.filter(c => c.id !== id);
+                saveChats();
+                renderChats();
+                
+                if (currentChatId === id) {
+                    if (chats.length > 0) {
+                        selectChat(chats[0].id);
+                    } else {
+                        currentChatId = null;
+                        document.getElementById('welcomeMessage').style.display = 'block';
+                        createNewChat();
+                    }
+                }
+                
+                const element = document.getElementById('chat-' + id);
+                if (element) element.remove();
+                delete chatInstances[id];
+            }
+        }
+
+        function selectChat(id) {
+            currentChatId = id;
+            const chat = chats.find(c => c.id === id);
+            
+            document.getElementById('chatTitle').textContent = chat.title;
+            document.getElementById('chatSubtitle').textContent = 'Created ' + new Date(chat.created).toLocaleDateString();
+            
+            // Hide all chats
+            document.querySelectorAll('.chat-instance').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show selected chat
+            let chatEl = document.getElementById('chat-' + id);
+            if (!chatEl) {
+                initChat(id);
+            } else {
+                chatEl.classList.add('active');
+            }
+            
+            renderChats();
+            document.getElementById('welcomeMessage').style.display = 'none';
+        }
+
+        function renderChats() {
+            const list = document.getElementById('chatList');
+            list.innerHTML = '';
+            
+            chats.forEach(chat => {
+                const div = document.createElement('div');
+                div.className = 'chat-item' + (chat.id === currentChatId ? ' active' : '');
+                div.innerHTML = `
+                    <div class="chat-info">
+                        <h4>${chat.title}</h4>
+                        <p>${new Date(chat.created).toLocaleDateString()}</p>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="delete-chat" onclick="deleteChat('${chat.id}', event)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                div.addEventListener('click', () => selectChat(chat.id));
+                list.appendChild(div);
+            });
+        }
+
+        async function initChat(id) {
+            console.log('Initializing chat:', id);
+            
+            const container = document.getElementById('n8nChatContainer');
+            
+            // Show loading
+            const loading = document.createElement('div');
+            loading.className = 'chat-loading';
+            loading.innerHTML = `
+                <div class="spinner"></div>
+                <p>Loading chat...</p>
+            `;
+            container.appendChild(loading);
+            
+            // Create chat div
+            const chatDiv = document.createElement('div');
+            chatDiv.id = 'chat-' + id;
+            chatDiv.className = 'chat-instance active';
+            container.appendChild(chatDiv);
+            
+            try {
+                // Import and create N8N chat
+                const { createChat } = await import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js');
+                
+                const instance = createChat({
+                    target: '#chat-' + id,
+                    webhookUrl: 'https://sunnyisnoob.app.n8n.cloud/webhook/71e36421-3d67-467d-9a02-b065393dd461/chat',
+                    mode: 'fullscreen',
+                    allowFileUploads: true,
+                    showWelcomeScreen: false,
+                    metadata: {
+                        userId: currentUser.id,
+                        chatId: id,
+                        userName: currentUser.name,
+                        userEmail: currentUser.email
+                    }
+                });
+                
+                chatInstances[id] = instance;
+                
+                setTimeout(() => {
+                    loading.remove();
+                    
+                    // Mark chat as having messages
+                    const chat = chats.find(c => c.id === id);
+                    if (chat) {
+                        chat.messages = true;
+                        saveChats();
+                    }
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Chat init error:', error);
+                loading.innerHTML = `
+                    <div style="color: red;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Failed to load chat. Please refresh.</p>
+                    </div>
+                `;
+            }
+        }
+
+        console.log('Script loaded successfully');
+    </script>
+</body>
+</html>
